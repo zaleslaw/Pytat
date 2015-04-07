@@ -79,25 +79,27 @@ class UnicodeWriter:
         for row in rows:
             self.writerow(row)
 
+
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
 api = tweepy.API(auth)
 
-user1 = api.get_user(TWITTER_USER_NAME)
+user = api.get_user(TWITTER_USER_NAME)
 
 
-print (user1.screen_name)
-print (user1.followers_count)
-print (user1.friends_count)
+print ("Username is " + str(user.screen_name))
+print ("Number of followers is " + str(user.followers_count))
+print ("Number of friends is " + str(user.friends_count))
+print ("Number of tweets is " + str(user.statuses_count))
 
 tweets = {}
-for tweet in tweepy.Cursor(api.user_timeline).items():
+for tweet in tweepy.Cursor(api.user_timeline, id=TWITTER_USER_NAME, wait_on_rate_limit=True).items():
     tweets[str(tweet.created_at)] = tweet.text
 
 print("Number of dumped tweets is " + str(len(tweets)))
 
-with codecs.open('tweets.csv', 'w') as f:
+with codecs.open('tweetsOf' + TWITTER_USER_NAME + '.csv', 'w') as f:
     csvWriter = UnicodeWriter(f, delimiter="|", quoting=csv.QUOTE_NONE, quotechar='')
 
     for key, value in sorted(tweets.items()):
@@ -106,5 +108,6 @@ with codecs.open('tweets.csv', 'w') as f:
             csvWriter.writerow([key, new_value])
         except csv.Error as e:
             print ("CSV error({0})".format(e.message))
+
 
 
